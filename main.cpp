@@ -1,5 +1,5 @@
-// compile with: clang++ -std=c++20 -Wall -Werror -Wextra -Wpedantic -g3 -o fruits fruits.cpp
-// run with: ./fruits 2> /dev/null or ./fruits 2> [name of .txt file of your choice] to avoid disruptive error messages
+// compile with: clang++ -std=c++20 -Wall -Werror -Wextra -Wpedantic -g3 -o main main.cpp
+// run with: ./team22-fruits 2> /dev/null or ./team22-fruits 2> debugoutput.txt to avoid disruptive error messages
 //  "2>" redirect standard error (STDERR; cerr)
 //  /dev/null is a "virtual file" which discard contents
 
@@ -50,8 +50,8 @@ const int END_COLUMN       { 37 };
 
 // Globals
 
-std::random_device rd;  //Will be used to obtain a seed for the random number engine
-std::mt19937 generator(rd()); //Standard mersenne_twister_engine seeded with rd()
+std::random_device rd;  // will be used to obtain a seed for the random number engine
+std::mt19937 generator(rd()); // standard mersenne_twister_engine seeded with rd()
 std::uniform_int_distribution<> lane(1, 7);
 
 struct termios initialTerm;
@@ -59,7 +59,6 @@ struct termios initialTerm;
 // Types
 
 // Using signed and not unsigned to avoid having to check for ( 0 - 1 ) being very large
-
 
 struct position { int row; int col; };
 
@@ -71,13 +70,13 @@ struct score
 
 struct fruit // one was added to the START_ROW and the value one was subtracted  from END-ROW to prevent conflict with the border 
 {
-    position position {START_ROW + 1, (lane( generator ) * 5) - 1 }; //the value is multiplied by 5 because the lane is 5 characters wide and subtract 1  to center the fruit and the lane 
+    position position {START_ROW + 1, (lane( generator ) * 5) - 1 }; // the value is multiplied by 5 because the lane is 5 characters wide and subtract 1 to center the fruit and the lane 
     unsigned int colour = COLOUR_GREEN;
 };
 
 struct basket
 {
-  position position { END_ROW - 1, MIDDLE_COLUMN }; // each lane the fruit falls is 5 columns wide and 
+  position position { END_ROW - 1, MIDDLE_COLUMN };
   unsigned int colour = COLOUR_WHITE;
 };
 
@@ -169,11 +168,10 @@ auto MakeColour( string inputString,
 
 // Game Logic
 
-
 auto UpdateFruitPosition( fruit & fruit ) -> void
 {
     int rowChange = 1;
-    // Ampersand were used as a reference so that the actual position updates
+    // Ampersand used as a reference so that the actual position updates
     fruit.position.row += rowChange;
 }
 
@@ -187,7 +185,7 @@ auto UpdateBasketPosition( basket & basket, char currentChar ) -> void
 
 
     auto proposedCol { basket.position.col + commandColChange };
-    basket.position.col = max( START_COLUMN + 1, min( END_COLUMN - 5, proposedCol ) ); // 5 was subtracted from END-COLUMN to ensure the right side does not go past the border
+    basket.position.col = max( START_COLUMN + 1, min( END_COLUMN - 5, proposedCol ) ); // 5 was subtracted from END_COLUMN to ensure the right side of the basket does not go past the border
 }
 
 /* Can be used if you want to spawn multiple fruits at a time
@@ -215,10 +213,10 @@ auto DrawBasket( basket basket ) -> void
     cout << "\\___/" << flush; 
 }
 
-// the IsCaught function is called when the fruit reaches the bottom row
+// The IsCaught function is called when the fruit reaches the bottom row
 auto IsCaught( fruit fruit, basket basket ) -> bool
 {
-    if (fruit.position.col - 2 == basket.position.col) // fruit is on the middle line, while the basket is on the left line, therefore two is subtracted to aallow it to align
+    if (fruit.position.col - 2 == basket.position.col) // fruit is centered in the columns while basket is left aligned. 2 is substracted so the positions line up.
     {
     	return true;
     }
@@ -262,19 +260,18 @@ auto DrawScore( score score ) -> void
 
 auto DrawGameOver( score score ) -> void
 {
-    // the values 8 and 14 were chosen for the "GAME OVER :(" message to ensure it is aligned in the middle of the box. The value 16 was chosen for score because it is shorter word
+    // The values 8 and 14 were chosen for the "GAME OVER :(" message to ensure it is aligned in the middle of the box. The value 16 was chosen for score because it is a shorter word
     MoveTo(8,14);
     cout << MakeColour("GAME OVER :(", COLOUR_RED) << flush;
     MoveTo(9,16);
     cout << "Score: " << to_string(score.score) << flush;
-    MoveTo(END_ROW, START_COLUMN); // move command line out of the center
+    MoveTo(END_ROW, START_COLUMN); // after the game ends, we don't want to command line spawning in the middle of the game but rather the line after the bottom row of our game
 }
 
 auto UpdateScore( score & score ) -> void
 {
     score.score++;
 }
-
 
 auto main() -> int
 {
@@ -303,7 +300,7 @@ auto main() -> int
 
     auto startTimestamp { chrono::steady_clock::now() };
     auto endTimestamp { startTimestamp };
-    int elapsedTimePerTick { 100 }; // Every 0.1s check on things; used as the speed of the falling fruit
+    int elapsedTimePerTick { 100 }; // every 0.1s check on things; used as the speed of the falling fruit
     
     SetNonblockingReadState( allowBackgroundProcessing );
     ClearScreen();
@@ -334,7 +331,7 @@ auto main() -> int
                     UpdateScore( score );
                     if ( elapsedTimePerTick >= 50 ) // don't go faster than 50 ms or else too laggy and impossible to win
                     {
-                        // a known issue is lag, especially as elapsedTimePerTick decreases, because rerendering is occuring too quickly 
+                        // A known issue is lag, especially as elapsedTimePerTick decreases, because rerendering is occuring too quickly 
                         elapsedTimePerTick -= 3;
                     }
                 }
@@ -343,7 +340,7 @@ auto main() -> int
                     break; // user unable to catch the fruit
                 }  
             }
-            // update screen every time interval
+            // Update screen every time interval
             UpdateFruitPosition( fruit );
             ClearScreen();
             HideCursor();
